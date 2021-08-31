@@ -1,0 +1,312 @@
+
+DML (Data Manipulation Language) which provides data manipulation features
+	
+DDL (Data Definition Language) which is used to manipulate database structures
+	create, alter, truncate, drop
+TCL (Transaction Control Language) that takes in charge data transaction verification and error handling
+
+	commit , rollback
+	
+	COMMIT – used to commit a transaction
+
+		ROLLBACK – in any advent of errors, transaction rollback is invoked by this keyword.
+		
+		SAVEPOINT – keyword representing the reverting point of rollback
+		
+		SET TRANSACTION – sets the specifics of the transaction
+
+
+DCL (Data Control Language) are security statements that feature user restrictions and data access permissions to promote security of your data
+	grant , revoke
+	
+DQL
+	Select
+	
+	
+	Primary Key – a unique key that identifies records in database tables. By unique it means that it must not be Null and must be unique in the table.
+
+Candidate Key – a unique field which identifies for column or group of columns independently, without any required reference to other fields.
+
+Alternate Key – can be substituted in use for Primary Keys but are considered as a secondary. The difference is that Alternate Keys can have a Null value, provided that the columns have data within them. A type of Candidate Key which is also required to be unique.
+
+Unique Key – Keys that offer restriction to prevent duplicate data within rows except for null entries.
+
+The other keys available are Foreign Keys, Super Keys, and Composite Keys.
+
+
+
+UNION ALL does the same function as the UNION, but it includes all, including the duplicate rows.
+
+
+
+
+Inner Join: Returns rows which are common between the tables
+Right Join: Returns rows of the right-hand side table, including the common rows.
+Left Join: Returns rows of the left-hand side table, including the common rows.
+Full Join: Returns all rows, regardless if common or not.
+
+
+The cross join produces the cross product or Cartesian product of two tables whereas the natural join is based on all the columns having the same name and data types in both the tables.
+
+
+
+
+WHERE clause is only used for static non-aggregated columns while the HAVING clause is used for aggregated columns only
+
+
+
+Atomicity, Consistency, Isolation, and Durability
+
+
+
+What are Constraints?
+Constraints in SQL are used to specify the limit on the data type of the table. It can be specified while creating or altering the table statement. The sample of constraints are:
+
+NOT NULL
+CHECK
+DEFAULT
+UNIQUE
+PRIMARY KEY
+FOREIGN KEY
+
+
+
+Unique Index:
+This index does not allow the field to have duplicate values if the column is unique indexed. If a primary key is defined, a unique index can be applied automatically.
+
+Clustered Index:
+This index reorders the physical order of the table and searches based on the basis of key values. Each table can only have one clustered index.
+
+Non-Clustered Index:
+Non-Clustered Index does not alter the physical order of the table and maintains a logical order of the data. Each table can have many nonclustered indexes.
+
+
+
+
+
+Clustered index is used for easy retrieval of data from the database and its faster whereas reading from non clustered index is relatively slower.
+Clustered index alters the way records are stored in a database as it sorts out rows by the column which is set to be clustered index whereas in a non clustered index, it does not alter the way it was stored but it creates a separate object within a table which points back to the original table rows after searching.
+One table can only have one clustered index whereas it can have many non clustered index.
+
+
+
+MySQL: Using limit clause, example select * from Employee limit 10;
+
+Oracle: Using ROWNUM clause, example SELECT * FROM Employee WHERE ROWNUM < 10;
+
+SQL Server: Using TOP clause, example SELECT TOP 3 * FROM Employee;
+
+
+
+Atomicity: Atomicity refers to the transactions that are completely done or failed where transaction refers to a single logical operation of a data. It means if one part of any transaction fails, the entire transaction fails and the database state is left unchanged.
+Consistency: Consistency ensures that the data must meet all the validation rules. In simple words,  you can say that your transaction never leaves the database without completing its state.
+Isolation: The main goal of isolation is concurrency control.
+Durability: Durability means that if a transaction has been committed, it will occur whatever may come in between such as power loss, crash or any sort of error.
+
+
+SELECT TOP 1 salary
+FROM(
+SELECT TOP 3 salary
+FROM employee_table
+ORDER BY salary DESC) AS emp
+ORDER BY salary ASC;
+
+without top
+
+SELECT Salary
+FROM EmployeeSalary Emp1
+WHERE 2 = (
+                SELECT COUNT( DISTINCT ( Emp2.Salary ) )
+                FROM EmployeeSalary Emp2
+                WHERE Emp2.Salary > Emp1.Salary
+            )
+
+For nth highest salary-
+
+SELECT Salary
+FROM EmployeeSalary Emp1
+WHERE N-1 = (
+                SELECT COUNT( DISTINCT ( Emp2.Salary ) )
+                FROM EmployeeSalary Emp2
+                WHERE Emp2.Salary > Emp1.Salary
+            )
+
+
+
+
+https://docs.oracle.com/cd/B19306_01/server.102/b14220/partconc.htm
+
+Range Partitioning
+
+	Range partitioning maps data to partitions based on ranges of partition key values that you establish for each partition. It is the most common type of partitioning and is often used with dates. For example, you might want to partition sales data into monthly partitions.
+
+		CREATE TABLE sales_range 
+		(salesman_id  NUMBER(5), 
+		salesman_name VARCHAR2(30), 
+		sales_amount  NUMBER(10), 
+		sales_date    DATE)
+		PARTITION BY RANGE(sales_date) 
+		(
+		PARTITION sales_jan2000 VALUES LESS THAN(TO_DATE('02/01/2000','MM/DD/YYYY')),
+		PARTITION sales_feb2000 VALUES LESS THAN(TO_DATE('03/01/2000','MM/DD/YYYY')),
+		PARTITION sales_mar2000 VALUES LESS THAN(TO_DATE('04/01/2000','MM/DD/YYYY')),
+		PARTITION sales_apr2000 VALUES LESS THAN(TO_DATE('05/01/2000','MM/DD/YYYY'))
+		);
+			
+			
+		Each partition has a VALUES LESS THAN clause, which specifies a noninclusive upper bound for the partitions. Any values of the partition key equal to or higher than this literal are added to the next higher partition.
+		
+		All partitions, except the first, have an implicit lower bound specified by the VALUES LESS THAN clause on the previous partition.
+		
+		A MAXVALUE literal can be defined for the highest partition. MAXVALUE represents a virtual infinite value that sorts higher than any other possible value for the partition key, including the null value.
+		
+		A typical example is given in the following section. The statement creates a table (sales_range) that is range partitioned on the sales_date field.
+		
+			
+
+List Partitioning
+
+		List partitioning enables you to explicitly control how rows map to partitions. You do this by specifying a list of discrete values for the partitioning key in the description for each partition. This is different from range partitioning, where a range of values is associated with a partition and from hash partitioning, where a hash function controls the row-to-partition mapping. The advantage of list partitioning is that you can group and organize unordered and unrelated sets of data in a natural way.
+		
+		The details of list partitioning can best be described with an example. In this case, let's say you want to partition a sales table by region. That means grouping states together according to their geographical location as in the following example.
+		
+		
+		
+		CREATE TABLE sales_list
+		(salesman_id  NUMBER(5), 
+		salesman_name VARCHAR2(30),
+		sales_state   VARCHAR2(20),
+		sales_amount  NUMBER(10), 
+		sales_date    DATE)
+		PARTITION BY LIST(sales_state)
+		(
+		PARTITION sales_west VALUES('California', 'Hawaii'),
+		PARTITION sales_east VALUES ('New York', 'Virginia', 'Florida'),
+		PARTITION sales_central VALUES('Texas', 'Illinois'),
+		PARTITION sales_other VALUES(DEFAULT)
+		);
+		
+		A row is mapped to a partition by checking whether the value of the partitioning column for a row falls within the set of values that describes the partition. For example, the rows are inserted as follows:
+		
+		(10, 'Jones', 'Hawaii', 100, '05-JAN-2000') maps to partition sales_west
+		
+		(21, 'Smith', 'Florida', 150, '15-JAN-2000') maps to partition sales_east
+		
+		(32, 'Lee', 'Colorado', 130, '21-JAN-2000') maps to partition sales_other
+		
+		Unlike range and hash partitioning, multicolumn partition keys are NOT supported for list partitioning. If a table is partitioned by list, the partitioning key can ONLY consist of a single column of the table.
+		
+		The DEFAULT partition enables you to avoid specifying all possible values for a list-partitioned table by using a default partition, so that all rows that do not map to any other partition do not generate an error.
+		
+		
+Hash Partitioning
+		Hash partitioning enables easy partitioning of data that does not lend itself to range or list partitioning. It does this with a simple syntax and is easy to implement. It is a better choice than range partitioning when:
+		
+		You do not know beforehand how much data maps into a given range
+		
+		The sizes of range partitions would differ quite substantially or would be difficult to balance manually
+		
+		Range partitioning would cause the data to be undesirably clustered
+		
+		Performance features such as parallel DML, partition pruning, and partition-wise joins are important
+		
+		The concepts of splitting, dropping or merging partitions do not apply to hash partitions. Instead, hash partitions can be added and coalesced.
+		
+		
+		
+		CREATE TABLE sales_hash
+		(salesman_id  NUMBER(5), 
+		salesman_name VARCHAR2(30), 
+		sales_amount  NUMBER(10), 
+		week_no       NUMBER(2)) 
+		PARTITION BY HASH(salesman_id) 
+		PARTITIONS 4 
+		STORE IN (ts1, ts2, ts3, ts4);
+		
+		The preceding statement creates a table sales_hash, which is hash partitioned on salesman_id field. The tablespace names are ts1, ts2, ts3, and ts4. With this syntax, we ensure that we create the partitions in a round-robin manner across the specified tablespaces.
+		
+		
+Composite Partitioning
+
+	range hash partiion, range list partion
+
+https://www.complexsql.com/indexing-in-sql/
+
+
+
+1. Normal index
+
+Create index NI_EMP_NAME on EMP(NAME);
+
+
+
+2.Unique Index
+
+Create Unique index  Index_name on Table_name(Unique column name);
+
+
+
+3.Bit Map Index
+	If Table contains the distinct values which are not more than 20 distinct values then user should go for Bit map indexes.User should avoid the indexing on each and every row and do the indexing only on distinct records of the table column.You should able to check drastic change in query cost after changing the normal index to Bit map index.The bit map indexes are very much useful in dataware housing where there are low level of concurrent transactions.Bit map index stores row_id as associated key value with bitmap and did the indexing only distinct values.Means If in  1 million  records only 20 distinct values are there so Bitmap index only stores 20 values as bitmap and fetches the records from that 20 values only.
+	
+	CREATE BITMAP index  BM_DEPT_NAME on DEPT(Department_name);
+
+
+4.Composite Index
+
+	When 2 or more columns in single table are related which each other and used in where condition of select statement then user should create composite index on the columns which are created.If all columns selected by in query are in composite index then oracle will return the values from the index without accessing the table.
+
+	Composite indexes should be avoided as they are large in size
+
+	Create index CI_ENO_DEPTNO on Employee(Empno,Deptno);
+
+
+
+5.B-Tree Index(Oracle considered Normal indexes as B-Tree Indexes)
+
+6.Function Based Index
+	Function based indexes allows us to index on the functional columns so that oracle engine will take the index and improves the performance of the query. As per requirements we are using lot of SQL functions to fetch the results.Function based indexs gives ability to index the computed columns.Function based indexes are easy to implement and it also provides immediate value.These indexes speeds up the application without changing application code or query.
+	
+	Create index FI_Employee on Employee(trunc(Hire_date));
+
+
+7.Clustered Index
+		1.The clustered indexes are indexes which are physically stored in order means it stores in ascending or descending order in Database.
+	
+		2.Clustered indexes are created one for each table.
+		
+		3.When primary key is created then clustered index has been automatically created in the table.
+		
+		4.If table is under heavy data modifications the clustered indexes are preferable to use.
+
+
+8.Non-Clustered Index.
+
+		1.The clustered indexes are used for searching purpose as we can create clustered indexes where primary is is defined.But Non clustered indexes are indexes which will be created on the multiple joining conditions,multiple filters used in query.
+		
+		2.We can create 0 to 249 non-clustered indexes on single table.
+		
+		3.Foreign keys should be non clustered.When user wants to retrieve heavy data from fields other than primary key the non clustered indexes are useful.
+		
+		I have explained the Basic concept of SQL Indexes here.In upcoming articles i will explain how the indexing works in detailed description with Example.Please comment if you want copy of this article or if you have any questions.Hope you like article of SQL Indexes.
+
+	
+	
+are Set operators in SQL?
+
+Answer:
+
+Set operators are nothing but the operators which are used to connect two tables and fetch the records from the two tables.We need to follow one condition that the table set 1 columns and table set 2 columns are same and its datatype must be same.SQL Set Operators combines the result of 2 queries or components on to the single result.
+
+Following are Set Operators in SQL:
+
+Union
+Unionall
+Intersect
+Minus
+
+
+
+ROWID is nothing but the physical address given to that row which is in hexadecimal format.ROWNUM is nothing but the logical sequence given to the row of that column.
+
+	

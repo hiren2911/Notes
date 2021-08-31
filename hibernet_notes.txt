@@ -1,0 +1,236 @@
+Elements of Hibernate Architecture
+For creating the first hibernate application, we must know the elements of Hibernate architecture. They are as follows:
+SessionFactory
+The SessionFactory is a factory of session and client of ConnectionProvider. It holds second level cache (optional) of data. The org.hibernate.SessionFactory interface provides factory method to get the object of Session.
+
+Session
+The session object provides an interface between the application and data stored in the database. It is a short-lived object and wraps the JDBC connection. It is factory of Transaction, Query and Criteria. It holds a first-level cache (mandatory) of data. The org.hibernate.Session interface provides methods to insert, update and delete the object. It also provides factory methods for Transaction, Query and Criteria.
+
+Transaction
+The transaction object specifies the atomic unit of work. It is optional. The org.hibernate.Transaction interface provides methods for transaction management.
+
+ConnectionProvider
+It is a factory of JDBC connections. It abstracts the application from DriverManager or DataSource. It is optional.
+
+TransactionFactory
+It is a factory of Transaction. It is optional.
+
+
+
+The mapping file name conventionally, should be class_name.hbm.xml. There are many elements of the mapping file.
+
+hibernate-mapping : It is the root element in the mapping file that contains all the mapping elements.
+class : It is the sub-element of the hibernate-mapping element. It specifies the Persistent class.
+id : It is the subelement of class. It specifies the primary key attribute in the class.
+generator : It is the sub-element of id. It is used to generate the primary key. There are many generator classes such as assigned, increment, hilo, sequence, native etc. We will learn all the generator classes later.
+property : It is the sub-element of class that specifies the property name of the Persistent class.
+
+
+
+mapping file : employee.hbm.xml
+
+configuration file : hibernate.cfg.xml
+
+The configuration file contains all the informations for the database such as connection_url, driver_class, username, password etc. The hbm2ddl.auto property is used to create the table in the database automatically. We will have in-depth learning about Dialect class in next topics. To create the configuration file, right click on src - new - file. Now specify the configuration file name e.g. hibernate.cfg.xml.
+
+
+@Entity annotation marks this class as an entity.
+
+@Table annotation specifies the table name where data of this entity is to be persisted. If you don't use @Table annotation, hibernate will use the class name as the table name by default.
+
+@Id annotation marks the identifier for this entity.
+
+@Column annotation specifies the details of the column for this property or field. If @Column annotation is not specified, property name will be used as the column name by default.
+
+
+
+
+All the generator classes implements the org.hibernate.id.IdentifierGenerator interface. The application programmer may create one's own generator classes by implementing the IdentifierGenerator interface. Hibernate framework provides many built-in generator classes:
+
+12 OPTUIONS are available
+
+assigned	
+	default It is the default generator strategy if there is no <generator> element . In this case, application assigns the id. 
+	
+increment
+	It generates the unique id only if no other process is inserting data into this table. It generates short, int or long type identifier. If a table contains an identifier then the application considers its maximum value else the application consider that the first generated identifier is 1. For each attribute value, the hibernate increment the identifier by 1.
+	
+sequence
+
+	uses the sequence of the database. if there is no sequence defined, it creates a sequence automatically e.g. in case of Oracle database, it creates a sequence named HIBERNATE_SEQUENCE. In case of Oracle, DB2, SAP DB, Postgre SQL or McKoi, it uses sequence but it uses generator in interbase.
+	For defining your own sequence, use the param subelement of generator.
+
+		<id ...>  
+		  <generator class="sequence">  
+			  <param name="sequence">your_sequence_name</param>  
+		  </generator>  
+		 </id>  
+		 
+		 
+hilo
+	It uses high and low algorithm to generate the id of type short, int and long. Syntax:
+
+
+
+native
+
+	It uses identity, sequence or hilo depending on the database vendor. Syntax:
+
+
+
+identity
+	It is used in Sybase, My SQL, MS SQL Server, DB2 and HypersonicSQL to support the id column. The returned id is of type short, int or long. It is responsibility of database to generate unique identifier.
+
+
+seqhilo
+	It uses high and low algorithm on the specified sequence name. The returned id is of type short, int or long.
+
+
+uuid
+	It uses 128-bit UUID algorithm to generate the id. The returned id is of type String, unique within a network (because IP is used). The UUID is represented in hexadecimal digits, 32 in length.
+
+
+guid
+	It uses GUID generated by database of type string. It works on MS SQL Server and MySQL.
+
+select
+	It uses the primary key returned by the database trigger.
+
+foreign
+	It uses the id of another associated object, mostly used with <one-to-one> association.
+
+sequence-identity
+	It uses a special sequence generation strategy. It is supported in Oracle 10g drivers only.
+
+
+
+
+
+Logging enables the programmer to write the log details into a file permanently. Log4j and Logback frameworks can be used in hibernate framework to support logging.
+
+There are two ways to perform logging using log4j:
+
+By log4j.xml file (or)
+By log4j.properties file
+
+FOR XML
+	There are two ways to perform logging using log4j using xml file:
+
+	Load the log4j jar files with hibernate
+	Create the log4j.xml file inside the src folder (parallel with hibernate.cfg.xml file)
+
+	
+FOR PROPERTY FILE	
+	Load the log4j jar files with hibernate
+	Create the log4j.properties file inside the src folder (parallel with hibernate.cfg.xml file)
+
+
+Hibernate Inheritance Mapping Tutorial
+
+
+	We can map the inheritance hierarchy classes with the table of the database. There are three inheritance mapping strategies defined in the hibernate:
+
+	Table Per Hierarchy
+	Table Per Concrete class
+	Table Per Subclass
+
+	Table Per Hierarchy
+
+
+In table per hierarchy mapping, single table is required to map the whole hierarchy, an extra column (known as discriminator column) is added to identify the class. But nullable values are stored in the table .
+
+<hibernate-mapping>  
+<class name="com.javatpoint.mypackage.Employee" table="emp121" discriminator-value="emp">  
+<id name="id">  
+<generator class="increment"></generator>  
+</id>  
+  
+<discriminator column="type" type="string"></discriminator>  
+<property name="name"></property>  
+            
+<subclass name="com.javatpoint.mypackage.Regular_Employee" discriminator-value="reg_emp">  
+<property name="salary"></property>  
+<property name="bonus"></property>  
+</subclass>  
+            
+<subclass name="com.javatpoint.mypackage.Contract_Employee" discriminator-value="con_emp">  
+<property name="pay_per_hour"></property>  
+<property name="contract_duration"></property>  
+</subclass>  
+            
+</class>  
+
+
+@Entity  
+@Table(name = "employee101")  
+@Inheritance(strategy=InheritanceType.SINGLE_TABLE)  
+@DiscriminatorColumn(name="type",discriminatorType=DiscriminatorType.STRING)  
+@DiscriminatorValue(value="employee")  
+  
+public class Employee {  
+@Id  
+@GeneratedValue(strategy=GenerationType.AUTO)  
+      
+@Column(name = "id")  
+private int id;  
+
+
+
+
+@Entity  
+@DiscriminatorValue("regularemployee")  
+public class Regular_Employee extends Employee{  
+      
+
+
+PER Concrete Class
+
+<hibernate-mapping>  
+  <class name="com.javatpoint.mypackage.Employee" table="emp122">  
+  <id name="id">  
+  <generator class="increment"></generator>  
+  </id>  
+           
+  <property name="name"></property>  
+            
+  <union-subclass name="com.javatpoint.mypackage.Regular_Employee" table="regemp122">  
+  <property name="salary"></property>  
+  <property name="bonus"></property>  
+  </union-subclass>  
+            
+  <union-subclass name="com.javatpoint.mypackage.Contract_Employee" table="contemp122">  
+  <property name="pay_per_hour"></property>  
+  <property name="contract_duration"></property>  
+  </union-subclass>  
+            
+  </class>  
+            
+  </hibernate-mapping>
+
+  @AttributeOverrides defines that parent class attributes will be overriden in this class. In table structure, parent class table columns will be added in the subclass table.
+
+
+  Name would exist in call classes
+  
+  
+  @Entity  
+@Table(name = "employee102")  
+@Inheritance(strategy = InheritanceType.TABLE_PER_CLASS)  
+  
+public class Employee {  
+@Id  
+@GeneratedValue(strategy=GenerationType.AUTO)  
+      
+@Column(name = "id")  
+private int id;  
+
+
+ 
+@Entity  
+@Table(name="regularemployee102")  
+@AttributeOverrides({  
+    @AttributeOverride(name="id", column=@Column(name="id")),  
+    @AttributeOverride(name="name", column=@Column(name="name"))  
+})  
+public class Regular_Employee extends Employee{  
+      

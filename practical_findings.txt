@@ -1,0 +1,57 @@
+
+if Multiple beand found of provided type
+ org.springframework.beans.factory.NoUniqueBeanDefinitionException
+ 
+ try to geta bean which does not exists
+ org.springframework.beans.factory.NoSuchBeanDefinitionException
+ 
+ if issue in configuration
+ org.springframework.beans.factory.BeanCreationException
+
+ if configured init method is not available, or init method expects some param or throws exception
+org.springframework.beans.factory.BeanCreationException
+
+ if try to provide value of same attribute multiple time
+org.springframework.beans.factory.parsing.BeanDefinitionParsingException
+
+ try to set dependancy using application context in bean constructor
+org.springframework.beans.factory.BeanCreationException 
+	should set in init method, or in afterPropertiesSet
+	
+	
+	
+	
+ 
+The idref element is simply an error-proof way to pass the id (string value - not a reference) 
+<bean id="student2" class="come.hiren.sample.beans.Student" scope="prototype" destroy-method="stop">
+		
+		<property name="name">
+			<idref bean="parentJP" />
+		</property>
+	</bean>
+	
+need to use <ref> to pass actual bean reference.
+
+In xml configuration autowire="byType|byName|no|constructor" , Need to add on depedant bean, not on the dependacy bean.
+In child can specify  autowire-candidate="false" to stop autowiring, if both specified autowiring will not happen
+
+
+in bean construcor, no properties are as per bean defination
+
+
+
+in Before BPP parentJP
+in After BPP parentJP
+
+in Student constructor
+	Student [name=null, address=null, standard=null, primaryParent=null, secondaryParent=null]
+in Before BPP student
+
+in afterPropertiesSet student
+	Student [name=Hiren, address=null, standard=null, primaryParent=Parent [name=Sarojben, noOfChild=null, spouseName=null], secondaryParent=null]
+	
+in default configuration someInit student
+		Student [name=Hiren, address=null, standard=null, primaryParent=Parent [name=Sarojben, noOfChild=null, spouseName=null], secondaryParent=Parent [name=Sarojben, noOfChild=null, spouseName=null]]
+in After BPP student
+in student destroy student
+in student stop

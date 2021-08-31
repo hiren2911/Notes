@@ -1,0 +1,107 @@
+https://www.youtube.com/watch?v=6zDrLvpfCK4&ab_channel=IBMCloud
+
+Isto service mesh
+
+	Secure
+		- TLS
+		
+	connect
+		- 
+	Observer
+	
+	controll
+		- service access
+		
+		
+	proxies in same pode
+		- side cars
+		- communication is done with proxy
+		
+		- ISTO configes
+		
+		
+		iso yaml configuration
+			
+			isto galley -> isto pilot -> envoy configuration to each proxies
+			
+			ISTO components
+			
+				Galley		-> uml -> validate the configuration & gives to pilot
+				pilot		-> pilot convertes to envoy configuration & sends to each proxy
+				policy		-> additinal policy
+				telemetry	-> status repors
+				citadel		-> generate & issues certification to proxies
+				
+				
+			Gateway
+				->
+			virtual service	
+			
+
+Service Types
+
+ClusterIP
+nodeport
+	-> external access by node ip
+loadbalancer
+	-> load balancer for each service
+	
+	
+Ingress.yaml
+
+
+kind: ingress
+
+
+Kubernetes master
+	-  kubernets API
+	- -- process kubectl commands & updates the kublets
+	
+	kind:
+		pod
+			image:
+			
+		deployment			-> creates replicasets -> identical copies of pods
+			-> num of pods
+			-> selector:
+			
+			
+		service
+			-> type: defalut 	: cluster ip	-> internal ip
+								: load balancer : external ip
+			-> selector: 
+			
+	
+Kublets
+	on worker node
+
+
+	Service registry
+	Service discovery
+
+
+KAFKA
+
+produce & consume data stream
+fast
+high accuracy
+in order
+falut tolerant
+
+APIs
+	producer
+		- topic orderd list events
+		- persisted to disk
+	consumer
+		- subsctibes to topics one or more
+		
+	Streams APIs
+		- analys the data producers in real time & gives it to consumers
+		
+	Connector APIs
+		
+		
+
+
+Decoupling integration
+messaging

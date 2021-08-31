@@ -1,0 +1,887 @@
+
+https://thoughts-on-java.org/tutorials/
+
+The java string intern() method returns the interned string. It returns the canonical representation of string.
+
+It can be used to return string from memory, if it is created by new keyword. It creates exact copy of heap string object in string constant pool.
+
+The transient keyword in Java is used to indicate that a field should not be part of the serialization (which means saved, like to a file) process.
+
+    private transient Image thumbnailImage;
+
+return type is not a part of method signature.
+overloading with just method signarture is not allowed
+Definition: Two of the components of a method declaration comprise the method signature—the method's name and the parameter types.
+
+Can overridden methods have different return types?
+	Java supports* covariant return types for overridden methods. This means an overridden method may have a more specific return type. That is, as long as the new return type is assignable to the return type of the method you are overriding, it's allowed.
+
+
+	If you don't have the same or narrower return type then you will get :: error: method() in subclass cannot override method() in superclass
+
+And exactly the same as having no constructors at all. However, if you define at least one constructor, the default constructor is not generated.
+
+
+
+VirtualMachineError or StackOverflowError
+
+throwable
+- error
+- exception
+	- checked (compile time)
+	- unchecked (runtime)
+
+checked exception
+	-> compile time exception
+unchecked exception
+	-> runtime exception
+
+Rule: By default, Checked Exceptions are 			NOT forwarded 		in calling chain (propagated). if specified in throws checked exceptions can be forwarded
+
+throws used to declare exceptions
+- only unchecked exception should be declared
+
+
+If the superclass method does not declare an exception
+	If the superclass method does not declare an exception, subclass overridden method cannot declare the checked exception but it can declare unchecked exception.
+
+If the superclass method declares an exception
+	If the superclass method declares an exception, subclass overridden method can declare same, subclass exception or no exception but cannot declare parent exception.
+	
+Rule: If the superclass method declares an exception, subclass overridden method can declare same, subclass exception or no exception but cannot declare parent exception.	
+
+If a client can reasonably be expected to recover from an exception, make it a checked exception. If a client cannot do anything to recover from the exception, make it an unchecked exception
+
+Only RuntimeException and its subclasses are unchecked.
+
+
+Checked Exceptions should be used for predictable, but unpreventable errors that are reasonable to recover from.
+	FileNotFoundException
+	IOException, SQLException, and ParseException
+	
+Unchecked Exceptions should be used for everything else.
+	NullPointerException
+	ArrayIndexOutOfBoundsException
+	ArithmeticException
+	IllegalArgumentException
+	NumberFormatException
+
+Error class represents critical conditions that can not be caught and handled by the code of the program.  the Exception class represents concerning conditions raised by the application itself; these can be caught and handled within the code to ensure that ​the application continues to run smoothly.
+
+Errors are also unchecked exception & the programmer is not required to do anything with these. In fact it is a bad idea to use a try-catch clause for Errors. Most often, recovery from an Error is not possible & the program should be allowed to terminate. Examples include OutOfMemoryError, StackOverflowError, etc.
+
+
+ finally will not be executed if the program exits either by calling System.exit() or by causing a fatal error that causes the process to abort.
+
+
+
+Primetive vs wrapper
+
+Caution is required when using the ternary operator with boxed types and null. From the language specification:
+
+If one of the second and third operands is of primitive type T, and the type of the other is the result of applying boxing conversion to T, then the type of the conditional expression is T.
+
+- for wrapper always use .equals() method to compare value otherwise always false as it is object.
+
+
+
+https://dzone.com/articles/how-does-spring-transactional
+
+https://docs.oracle.com/javase/6/docs/api/java/lang/ThreadLocal.html
+
+https://www.edureka.co/blog/interview-questions/java-interview-questions/#Jdk-Jre-and-Jvm
+
+	Stack
+		Allocated per Thread
+		Stack memory can’t be accessed by other threads.	
+		Stores local references and primitives
+		This is scoped memory - When a method or thread ends, all their data in the stack is lost
+		Has the fastest access, so a local primitive is faster to use than a local Object
+	Heap
+		All allocated object instances exist here
+		Divided into Generations, with the youngest generation being the first place GC looks
+		Available to all threads so allocations and deallocations should be synchronised
+		This memory can become fragmented (but you do not usually manage this yourself)
+	PermGen
+		Stores loaded class information
+		Stores immutable information (Primatives, interned Strings)
+		Stores static class members
+
+String pool is available in heap memodry
+
+
+	PermGen is an abbreviation for Permanent Generation and it’s a special heap space which is separate from the main Java heap where JVM keeps track of metadata of the classes which have been loaded. In Java 8, PermGen has been renamed to Metaspace - with some subtle differences. From our perspective, it is important to note that Metaspace has an unlimited default maximum size. On the contrary, PermGen from Java 7 and earlier has a default maximum size of 64 MB on 32-bit JVM and 82 MB on the 64-bit version. Of course, these are not the same as the initial sizes. Java 7 and earlier starts with something around 12-21 MB of the initial PermGen space
+
+this() & super(), must be first line of block
+
+
+
+	The Java ClassLoader is a subset of JVM (Java Virtual Machine) that is responsible for loading the class files. Whenever a Java program is executed it is first loaded by the classloader. Java provides three built-in classloaders:
+
+		Bootstrap ClassLoader
+		Extension ClassLoader
+		System/Application ClassLoader
+		
+		
+		public void printClassLoaders() throws ClassNotFoundException {
+		
+			System.out.println("Classloader of this class:"
+				+ PrintClassLoader.class.getClassLoader());
+		
+			System.out.println("Classloader of Logging:"
+				+ Logging.class.getClassLoader());
+		
+			System.out.println("Classloader of ArrayList:"
+				+ ArrayList.class.getClassLoader());
+		}
+		
+		
+		Class loader of this class:sun.misc.Launcher$AppClassLoader@18b4aac2
+		Class loader of Logging:sun.misc.Launcher$ExtClassLoader@3caeaf62
+		Class loader of ArrayList:null
+		
+		However, we can see that the last out, for the ArrayList it displays null in the output. This is because the bootstrap class loader is written in native code, not Java – so it doesn't show up as a Java class. Due to this reason, the behavior of the bootstrap class loader will differ across JVMs.
+		
+		It's mainly responsible for loading JDK internal classes, typically rt.jar and other core libraries located in $JAVA_HOME/jre/lib directory. Additionally, Bootstrap class loader serves as a parent of all the other ClassLoader instances.
+
+		This bootstrap class loader is part of the core JVM and is written in native code as pointed out in the above example. Different platforms might have different implementations of this particular class loader.
+
+
+
+	ClassNotFoundException
+	
+		ClassNotFoundException is a checked exception which occurs when an application tries to load a class through its fully-qualified name and cannot find its definition on the classpath.
+
+		This occurs mainly when trying to load classes using Class.forName(), ClassLoader.loadClass() or ClassLoader.findSystemClass(). Therefore, we need to be extra careful of java.lang.ClassNotFoundException while working with reflection.
+		
+	NoClassDefFoundError
+
+		NoClassDefFoundError is a fatal error. It occurs when JVM can not find the definition of the class while trying to:
+
+		Instantiate a class by using the new keyword
+		Load a class with a method call
+		The error occurs when a compiler could successfully compile the class, but Java runtime could not locate the class file. It usually happens when there is an exception while executing a static block or initializing static fields of the class, so class initialization fails.
+			
+
+Single Inheritance: In single inheritance, one class inherits the properties of another i.e there will be only one parent as well as one child class.
+Multilevel Inheritance: When a class is derived from a class which is also derived from another class, i.e. a class having more than one parent class but at different levels, such type of inheritance is called Multilevel Inheritance.
+Hierarchical Inheritance: When a class has more than one child classes (subclasses) or in other words, more than one child classes have the same parent class, then such kind of inheritance is known as hierarchical.
+Hybrid Inheritance: Hybrid inheritance is a combination of two or more types of inheritance.			
+			
+
+	overrideing scenarios
+	
+	association
+		Association is a relationship where all object have their own lifecycle and there is no owner. Let’s take the example of Teacher and Student. Multiple students can associate with a single teacher and a single student can associate with multiple teachers but there is no ownership between the objects and both have their own lifecycle. These relationships can be one to one, one to many, many to one and many to many.
+
+
+	aggregation
+		An aggregation is a specialized form of Association where all object has their own lifecycle but there is ownership and child object can not belong to another parent object. Let’s take an example of Department and teacher. A single teacher can not belong to multiple departments, but if we delete the department teacher object will not destroy. 
+
+
+	composition
+	
+		Composition is again a specialized form of Aggregation and we can call this as a “death” relationship. It is a strong type of Aggregation. Child object does not have their lifecycle and if parent object deletes all child object will also be deleted. Let’s take again an example of a relationship between House and rooms. House can contain multiple rooms there is no independent life of room and any room can not belongs to two different houses if we delete the house room will automatically delete.
+
+
+	Copy construcoter
+		- new object from the existing object
+
+			
+datatypes
+ primitive vs wrapper
+ 
+
+
+typeconverstion
+string operation
+	.contains("")
+	.compareTo("") lexicographically compare
+	.equal
+	.substring(start, end)
+date operation
+
+ autoboxing
+ marshaling
+ seralizing
+
+collections
+- list, set, map
+- basics
+- operations
+
+An abstract class cannot be instantiated directly, i.e. object of such class cannot be created directly using new keyword. An abstract class can be instantiated either by concrete subclass, or by defining all the abstract method along with the new statement. A concrete class can be instantiated directly, using a new keyword.
+
+
+
+
+JPA
+- hibernet
+	--> all toOne are egar
+	--> all toMany are lazy by default
+	
+	=> owner entity is one having field for foriegn key
+	=> shared primary is when two table have uses have same value as primary key
+	
+	@OneToOne
+		Use @PrimaryKeyJoinColumn for associated entities sharing the same primary key.
+		Use @JoinColumn & @OneToOne mappedBy attribute when foreign key is held by one of the entities.
+		Use @JoinTable and mappedBy entities linked through an association table.
+		Persist two entities with shared key using @MapsId
+	
+	@ManyToOne
+		Use @JoinColumn when foreign key is held by one of the entities.
+		Use @JoinTable for entities linked through an association table.
+		
+	@OneToMany
+		Use mappedBy attribute for bi-directional associations with ManyToOne being the owner.
+		OneToMany being the owner or unidirectional with foreign key - try to avoid such associations but can be achieved with @JoinColumn
+		@JoinTable for Unidirectional with association table
+	@ManyToMany
+		Use @JoinTable for entities linked through an association table.
+		Use mappedBy attribute for bi-directional association.
+
+Jdbc
+
+-- Connection interface
+
+The Connection interface is a factory of Statement, PreparedStatement, and DatabaseMetaData i.e. object of Connection can be used to get the object of Statement and DatabaseMetaData. The Connection interface provide many methods for transaction management like commit(), rollback() etc.
+
+
+1) public Statement createStatement(): creates a statement object that can be used to execute SQL queries.
+2) public Statement createStatement(int resultSetType,int resultSetConcurrency): Creates a Statement object that will generate ResultSet objects with the given type and concurrency.
+3) public void setAutoCommit(boolean status): is used to set the commit status.By default it is true.
+4) public void commit(): saves the changes made since the previous commit/rollback permanent.
+5) public void rollback(): Drops all changes made since the previous commit/rollback.
+6) public void close(): closes the connection and Releases a JDBC resources immediately.
+
+-- The Statement interface provides methods to execute queries with the database. The statement interface is a factory of ResultSet i.e. it provides factory method to get the object of ResultSet.
+
+
+1) public ResultSet executeQuery(String sql): is used to execute SELECT query. It returns the object of ResultSet.
+2) public int executeUpdate(String sql): is used to execute specified query, it may be create, drop, insert, update, delete etc.
+3) public boolean execute(String sql): is used to execute queries that may return multiple results.
+4) public int[] executeBatch(): is used to execute batch of commands.
+
+
+-- The object of ResultSet maintains a cursor pointing to a row of a table. Initially, cursor points to before the first row.
+
+By default, ResultSet object can be moved forward only and it is not updatable.
+But we can make this object to move forward and backward direction by passing either TYPE_SCROLL_INSENSITIVE or TYPE_SCROLL_SENSITIVE in createStatement(int,int) method as well as we can make this object as updatable by:
+
+1) public boolean next():	is used to move the cursor to the one row next from the current position.
+2) public boolean previous():	is used to move the cursor to the one row previous from the current position.
+3) public boolean first():	is used to move the cursor to the first row in result set object.
+4) public boolean last():	is used to move the cursor to the last row in result set object.
+5) public boolean absolute(int row):	is used to move the cursor to the specified row number in the ResultSet object.
+6) public boolean relative(int row):	is used to move the cursor to the relative row number in the ResultSet object, it may be positive or negative.
+7) public int getInt(int columnIndex):	is used to return the data of specified column index of the current row as int.
+8) public int getInt(String columnName):	is used to return the data of specified column name of the current row as int.
+9) public String getString(int columnIndex):	is used to return the data of specified column index of the current row as String.
+10) public String getString(String columnName):	is used to return the data of specified column name of the current row as String.
+
+
+The PreparedStatement interface is a subinterface of Statement. It is used to execute parameterized query.
+
+
+The important methods of PreparedStatement interface are given below:
+
+public void setInt(int paramIndex, int value)	sets the integer value to the given parameter index.
+public void setString(int paramIndex, String value)	sets the String value to the given parameter index.
+public void setFloat(int paramIndex, float value)	sets the float value to the given parameter index.
+public void setDouble(int paramIndex, double value)	sets the double value to the given parameter index.
+public int executeUpdate()	executes the query. It is used for create, drop, insert, update, delete etc.
+public ResultSet executeQuery()	executes the select query. It returns an instance of ResultSet.
+
+
+--- Java ResultSetMetaData Interface
+The metadata means data about data i.e. we can get further information from the data.
+
+If you have to get metadata of a table like total number of column, column name, column type etc. , ResultSetMetaData interface is useful because it provides methods to get metadata from the ResultSet object.
+
+
+--- Java DatabaseMetaData interface
+DatabaseMetaData interface provides methods to get meta data of a database such as database product name, database product version, driver name, name of total number of tables, name of total number of views etc.
+
+
+public String getDriverName()throws SQLException: it returns the name of the JDBC driver.
+public String getDriverVersion()throws SQLException: it returns the version number of the JDBC driver.
+public String getUserName()throws SQLException: it returns the username of the database.
+public String getDatabaseProductName()throws SQLException: it returns the product name of the database.
+public String getDatabaseProductVersion()throws SQLException: it returns the product version of the database.
+public ResultSet getTables(String catalog, String schemaPattern, String tableNamePattern, String[] types)throws SQLException: it returns the description of the tables of the specified catalog. The table type can be TABLE, VIEW, ALIAS, SYSTEM TABLE, SYNONYM etc.
+
+
+You can store images in the database in java by the help of PreparedStatement interface.
+
+The setBinaryStream() method of PreparedStatement is used to set Binary information into the parameterIndex.
+
+FileInputStream fin=new FileInputStream("d:\\g.jpg");  
+ps.setBinaryStream(2,fin,fin.available());  
+int i=ps.executeUpdate();  
+System.out.println(i+" records affected");
+
+
+--- CallableStatement Interface
+
+CallableStatement interface is used to call the stored procedures and functions.
+
+We can have business logic on the database by the use of stored procedures and functions that will make the performance better because these are precompiled.
+
+Suppose you need the get the age of the employee based on the date of birth, you may create a function that receives date as the input and returns age of the employee as the output.
+
+We can call functions from the procedure.
+SP must not have the return type.	
+
+Procedure supports input and output parameters.	
+
+Exception handling using try/catch block can be used in stored procedures.	
+
+CallableStatement stmt=con.prepareCall("{call myprocedure(?,?)}");  
+
+
+CallableStatement stmt=con.prepareCall("{?= call sumFun4(?,?)}");  
+stmt.setInt(2,10);  
+stmt.setInt(3,43);  
+stmt.registerOutParameter(1,Types.INTEGER);  
+stmt.execute();  
+
+
+In JDBC, Connection interface provides methods to manage transaction.
+
+void setAutoCommit(boolean status)	It is true bydefault means each transaction is committed bydefault.
+void commit()	commits the transaction.
+void rollback()	cancels the transaction.
+
+The java.sql.Statement and java.sql.PreparedStatement interfaces provide methods for batch processing.
+
+Fast Performance
+
+void addBatch(String query)	It adds query into batch.
+int[] executeBatch()	It executes the batch of queries.
+
+Statement stmt=con.createStatement();  
+stmt.addBatch("insert into user420 values(190,'abhi',40000)");  
+stmt.addBatch("insert into user420 values(191,'umesh',50000)");  
+  
+stmt.executeBatch();//executing the batch  
+
+
+JdbcRowSet
+CachedRowSet
+WebRowSet
+JoinRowSet
+FilteredRowSet
+
+
+The advantages of using RowSet are given below:
+
+It is easy and flexible to use
+It is Scrollable and Updatable bydefault
+
+Jdbc 3.0 Features
+
+
+Jdbc RowSet
+Savepoint in transaction management Now you are able to create, rollback and release the savepoint by Connection.setSavepoint(), Connection.rollback(Savepoint svpt) and Connection.releaseSavepoint(Savepoint svpt) methods.
+Statement and ResultSet Caching for Connection Pooling Now you are able to reuse the statement and result set because jdbc 3 provides you the facility of statement caching and result set caching.
+Switching between Global and Local Transactions
+Retrieval of auto generated keys Now you are able to get the auto generated keys by the method getGeneratedKeys().
+
+
+
+The important features of JDBC API 4.0 are given below:
+
+Automatic Loading of Driver class You don't need to write Class.forName() now because it is loaded bydefault since jdbc4.
+Subclasses of SQLException Jdbc 4 provides new subclasses of SQLException class for better readability and handling.
+New methods There are many new methods introduced in Connection, PreparedStatement, CallableStatement, ResultSet etc.
+Improved DataSource Now data source implementation is improved.
+Event Handling support in Statement for Connection Pooling Now Connection Pooling can listen statement error and statement closing events.
+
+=====================================================================================================
+=====================================================================================================
+=====================================================================================================
+logs
+
+
+byte b = 10; 
+          
+        // Using b = b+1 
+        b = b + 1; 
+        System.out.println(b); 
+          
+        /* Using typecasting will work 
+        b=(byte)b+1; 
+        System.out.println(b);*/
+		
+		
+		
+Threads can be created by using two mechanisms :
+1. Extending the Thread class
+2. Implementing the Runnable Interface
+
+
+
+// Java code for thread creation by extending 
+// the Thread class 
+class MultithreadingDemo extends Thread 
+{ 
+	public void run() 
+	{ 
+		try
+		{ 
+			// Displaying the thread that is running 
+			System.out.println ("Thread " + 
+				Thread.currentThread().getId() + 
+				" is running"); 
+
+		} 
+		catch (Exception e) 
+		{ 
+			// Throwing an exception 
+			System.out.println ("Exception is caught"); 
+		} 
+	} 
+} 
+
+// Main Class 
+public class Multithread 
+{ 
+	public static void main(String[] args) 
+	{ 
+		int n = 8; // Number of threads 
+		for (int i=0; i<8; i++) 
+		{ 
+			MultithreadingDemo object = new MultithreadingDemo(); 
+			object.start(); 
+		} 
+	} 
+} 
+
+
+
+
+
+
+
+
+
+
+// Java code for thread creation by implementing 
+// the Runnable Interface 
+class MultithreadingDemo implements Runnable 
+{ 
+	public void run() 
+	{ 
+		try
+		{ 
+			// Displaying the thread that is running 
+			System.out.println ("Thread " + 
+								Thread.currentThread().getId() + 
+								" is running"); 
+
+		} 
+		catch (Exception e) 
+		{ 
+			// Throwing an exception 
+			System.out.println ("Exception is caught"); 
+		} 
+	} 
+} 
+
+// Main Class 
+class Multithread 
+{ 
+	public static void main(String[] args) 
+	{ 
+		int n = 8; // Number of threads 
+		for (int i=0; i<8; i++) 
+		{ 
+			Thread object = new Thread(new MultithreadingDemo()); 
+			object.start(); 
+		} 
+	} 
+} 
+		
+		
+		https://www.geeksforgeeks.org/multithreading-in-java/
+		
+How can an object be unreferenced
+1) By nulling a reference:
+Employee e=new Employee();  
+e=null;  
+
+2) By assigning a reference to another:
+Employee e1=new Employee();  
+Employee e2=new Employee();  
+e1=e2;//now the first object referred by e1 is available for garbage collection  
+
+3) By anonymous object:
+new Employee();  
+		
+		
+	Note: The Garbage collector of JVM collects only those objects that are created by new keyword. So if you have created any object without new, you can use finalize method to perform cleanup processing (destroying remaining objects).
+	
+	Note: Garbage collection is performed by a daemon thread called Garbage Collector(GC). This thread calls the finalize() method before object is garbage collected.
+	
+	
+Java Runtime class
+
+Java Runtime class is used to interact with java runtime environment. Java Runtime class provides methods to execute a process, invoke GC, get total and free memory etc. There is only one instance of java.lang.Runtime class is available for one java application.
+
+The Runtime.getRuntime() method returns the singleton instance of Runtime class.
+
+	
+	
+	
+Synchronization in java is the capability to control the access of multiple threads to any shared resource	
+
+
+
+####################################################
+
+try with resource : added in java 7: 
+- can be used instead of finally block
+- close resouce even if error have occurde
+
+multiple exceptions in catch block
+try {
+  //.....
+} catch ( IllegalArgumentException | SecurityException |
+         IllegalAccessException |NoSuchFieldException exc) {
+		 
+		 
+java 8 
+- interface can have static & default method implementations
+- in case, where class implements 2 interface with same name, the class must provide its own implementations
+
+
+@NonfunctionalInterface
+for interface having only one abstract method , similar to @Override anotations
+
+
+LeadRepository	-> JpaRepository	-> PagingAndSortingRepository -> CrudRepository	-> Repository
+
+
+
+@NonNullApi: Used on the package level to declare that the default behavior for parameters and return values is to not accept or produce null values.
+
+	@org.springframework.lang.NonNullApi
+	package com.acme;
+
+@NonNull: Used on a parameter or return value that must not be null (not needed on a parameter and return value where @NonNullApi applies).
+
+@Nullable: Used on a parameter or return value that can be null.
+
+
+  User getByEmailAddress(EmailAddress emailAddress);                    
+	
+		Throws an EmptyResultDataAccessException when the query executed does not produce a result. Throws an IllegalArgumentException when the emailAddress handed to the method is null.
+
+  @Nullable
+  User findByEmailAddress(@Nullable EmailAddress emailAdress);          
+		
+		Returns null when the query executed does not produce a result. Also accepts null as the value for emailAddress
+	
+  Optional<User> findOptionalByEmailAddress(EmailAddress emailAddress);
+  
+		Returns Optional.empty() when the query executed does not produce a result. Throws an IllegalArgumentException when the emailAddress handed to the method is null.
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+  List<Person> findByEmailAddressAndLastname(EmailAddress emailAddress, String lastname);
+
+  // Enables the distinct flag for the query
+  List<Person> findDistinctPeopleByLastnameOrFirstname(String lastname, String firstname);
+  List<Person> findPeopleDistinctByLastnameOrFirstname(String lastname, String firstname);
+
+  // Enabling ignoring case for an individual property
+  List<Person> findByLastnameIgnoreCase(String lastname);
+  // Enabling ignoring case for all suitable properties
+  List<Person> findByLastnameAndFirstnameAllIgnoreCase(String lastname, String firstname);
+
+  // Enabling static ORDER BY for a query
+  List<Person> findByLastnameOrderByFirstnameAsc(String lastname);
+  List<Person> findByLastnameOrderByFirstnameDesc(String lastname);		
+
+  
+  
+	User findFirstByOrderByLastnameAsc();
+
+	User findTopByOrderByAgeDesc();
+
+	Page<User> queryFirst10ByLastname(String lastname, Pageable pageable);
+
+	Slice<User> findTop3ByLastname(String lastname, Pageable pageable);
+
+	List<User> findFirst10ByLastname(String lastname, Sort sort);
+
+	List<User> findTop10ByLastname(String lastname, Pageable pageable);
+	
+	
+	Named Queries
+	
+	@Entity
+	@NamedQuery(name = "User.findByEmailAddress",
+	  query = "select u from User u where u.emailAddress = ?1")
+	public class User {
+
+	}
+	
+	
+	public interface UserRepository extends JpaRepository<User, Long> {
+
+	  @Query("select u from User u where u.emailAddress = ?1")
+	  User findByEmailAddress(String emailAddress);
+	}
+	
+	
+	Nativ query
+	public interface UserRepository extends JpaRepository<User, Long> {
+
+	  @Query(value = "SELECT * FROM USERS WHERE EMAIL_ADDRESS = ?1", nativeQuery = true)
+	  User findByEmailAddress(String emailAddress);
+	}
+	
+	
+	
+	
+	public interface UserRepository extends JpaRepository<User, Long> {
+
+  @Query("select u from User u where u.lastname like ?1%")
+  List<User> findByAndSort(String lastname, Sort sort);
+
+  @Query("select u.id, LENGTH(u.firstname) as fn_len from User u where u.lastname like ?1%")
+  List<Object[]> findByAsArrayAndSort(String lastname, Sort sort);
+}
+
+repo.findByAndSort("lannister", new Sort("firstname"));               
+repo.findByAndSort("stark", new Sort("LENGTH(firstname)"));           
+repo.findByAndSort("targaryen", JpaSort.unsafe("LENGTH(firstname)")); 
+repo.findByAsArrayAndSort("bolton", new Sort("fn_len"));    
+
+
+
+named parameter
+
+public interface UserRepository extends JpaRepository<User, Long> {
+
+  @Query("select u from User u where u.firstname = :firstname or u.lastname = :lastname")
+  User findByLastnameOrFirstname(@Param("lastname") String lastname,
+                                 @Param("firstname") String firstname);
+}
+
+https://codepumpkin.com/hashset-internal-implementation/
+
+
+========================================
+
+==
+
+DecimalFormat df = new DecimalFormat("#.#####");
+df.format(0.912385);
+However as you can see this uses half-even rounding. That is it will round down if the previous digit is even.
+
+DecimalFormat df = new DecimalFormat("#.####");
+df.setRoundingMode(RoundingMode.CEILING);
+
+default Decimal mode uses RoundingMode.HALF_EVEN
+
+==
+Array list internally uses array
+The default initial capacity of an ArrayList is pretty small (10 from Java 1.4 - 1.8). But since the underlying implementation is an array, the array must be resized if you add a lot of elements. To avoid the high cost of resizing when you know you're going to add a lot of elements, construct the ArrayList with a higher initial capacity.
+
+==
+
+transient is a Java keyword which marks a member variable not to be serialized when it is persisted to streams of bytes
+@DoNotSerialize
+
+==
+
+Hasset internally uses hasmap, and puts values as keys of hasmap. so doen't allow duplicate values. And for Value field it does set dummy value object with "PRESENT" value
+
+==
+
+Generally Arralylist is prefered over linked list because it uses more memory to store 2 additional addresses,
+
+
+==
+
+jps - the Java Process Status Application	The tool is limited to reporting information on JVMs for which it has the access permissions.
+
+
+==
+jstat -gc -h5 -t 14984 2500 30
+jstat -gcutil 21891 250 7
+
+jstat -gcnew -h3 21891 250
+
+
+3 types of annotations
+
+- marker 
+	just mark, do not accept any value @Override
+- single value
+	single member and it is mandatory
+- full
+
+
+
+Four are imported from java.lang.annotation: @Retention, @Documented, @Target, and @Inherited.
+Three are included in java.lang: @Deprecated, @Override and @SuppressWarnings
+
+Starting with J2SE 5.0, you deprecate a class, method, or field by using the @Deprecated annotation. Additionally, you can use the @deprecated Javadoc tag tell developers what to use instead.
+
+Using the @Deprecated annotation to deprecate a class, method, or field ensures that all compilers will issue warnings when code uses that program element. In contrast, there is no guarantee that all compilers will always issue warnings based on the @deprecated Javadoc tag, though the Sun compilers currently do so. Other compilers may not issue such warnings. Thus, using the @Deprecated annotation to generate warnings is more portable that relying on the @deprecated Javadoc tag.
+
+
+
+You can use the @deprecated tag to make Javadoc show a program element as deprecated. The @deprecated tag must be followed by a space or newline. In the paragraph following the @deprecated tag, explain why the item has been deprecated and suggest what to use instead.
+
+/**
+ * Delete multiple items from the list.
+ *
+ * @deprecated  Not for public use.
+ *    This method is expected to be retained only as a package
+ *    private method.  Replaced by
+ *    {@link #remove(int)} and {@link #removeAll()}
+ */
+@Deprecated public synchronized void delItems(int start, int end) {
+...
+}
+
+
+===================================
+===================================
+Inner Class
+===================================
+===================================
+
+
+Inner class is a part of nested class. Non-static nested classes are known as inner classes.
+Inner class can access all the members including private ones
+
+Non-static nested class (inner class)
+	Member inner class
+	Anonymous inner class
+	Local inner class
+Static nested class
+
+
+Type						Description
+Member Inner Class		A class created within class and outside method.
+Anonymous Inner Class	A class created for implementing interface or extending class. Its name is decided by the java 		 
+						compiler.
+Local Inner Class		A class created within method.
+Static Nested Class		A static class created within class.
+Nested Interface		An interface created within class or interface.
+
+
+Member Inner Class
+
+The java compiler creates two class files in case of inner class. The class file name of inner class is "Outer$Inner". If you want to instantiate inner class, you must have to create the instance of outer class. In such case, instance of inner class is created inside the instance of outer class.
+
+Java Anonymous inner class
+A class that have no name is known as anonymous inner class in java. It should be used if you have to override method of class or interface. Java Anonymous inner class can be created by two ways:
+
+Class (may be abstract or concrete).
+Interface
+
+
+ public static void main(String args[]){  
+  Person p=new Person(){  
+  void eat(){System.out.println("nice fruits");}  
+  };  
+  p.eat();  
+ }
+
+A class is created but its name is decided by the compiler which extends the Person class and provides the implementation of the eat() method.
+An object of Anonymous class is created that is referred by p reference variable of Person type 
+
+
+
+Java Local inner class
+
+
+A class i.e. created inside a method is called local inner class in java. If you want to invoke the methods of local inner class, you must instantiate this class inside the method.
+
+public class localInner1{  
+ private int data=30;//instance variable  
+ void display(){  
+  class Local{  
+   void msg(){System.out.println(data);}  
+  }  
+  Local l=new Local();  
+  l.msg();  
+ }  
+ public static void main(String args[]){  
+  localInner1 obj=new localInner1();  
+  obj.display();  
+ }  
+}  
+
+
+1) Local inner class cannot be invoked from outside the method.
+2) Local inner class cannot access non-final local variable till JDK 1.7. Since JDK 1.8, it is possible to access the non-final local variable in local inner class.
+
+
+
+Java static nested class
+
+
+A static class i.e. created inside a class is called static nested class in java. It cannot access non-static data members and methods. It can be accessed by outer class name.
+
+It can access static data members of outer class including private.
+Static nested class cannot access non-static (instance) data member or method.
+
+
+  static int data=30;  
+  static class Inner{  
+   void msg(){System.out.println("data is "+data);}  
+  }  
+  public static void main(String args[]){  
+  TestOuter1.Inner obj=new TestOuter1.Inner();  
+  obj.msg();  
+  }  
+
+
+Java Nested Interface
+	An interface i.e. declared within another interface or class is known as nested interface. The nested interfaces are used to group related interfaces so that they can be easy to maintain. The nested interface must be referred by the outer interface or class. It can't be accessed directly.
+
+Points to remember for nested interfaces
+There are given some points that should be remembered by the java programmer.
+
+	Nested interface must be public if it is declared inside the interface but it can have any access modifier if declared within the class.
+	Nested interfaces are declared static implicitely.
+
+
+Can we define a class inside the interface?
+	Yes, If we define a class inside the interface, java compiler creates a static nested class. Let's see how can we define a class within the interface
+
+
+
+Local classes are similar to inner classes because they cannot define or declare any static members.
+ Local classes in static methods, such as the class PhoneNumber, which is defined in the static method validatePhoneNumber, can only refer to static members of the enclosing class. 
+ 
+ For example, if you do not define the member variable regularExpression as static, then the Java compiler generates an error similar to "non-static variable regularExpression cannot be referenced from a static context."
+
+Local classes are non-static because they have access to instance members of the enclosing block. Consequently, they cannot contain most kinds of static declarations.
+
+You cannot declare an interface inside a block; interfaces are inherently static. For example, the following code excerpt does not compile because the interface HelloThere is defined inside the body of the method greetInEnglish:
+
+
+
+Terminology: Nested classes are divided into two categories: static and non-static. Nested classes that are declared static are called static nested classes. Non-static nested classes are called inner classes.
+
+
+The first-level cache is maintained at Session level while the second level cache is maintained at a SessionFactory level and is shared by all sessions.
+

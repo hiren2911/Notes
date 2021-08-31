@@ -1,0 +1,973 @@
+spring boot
+- anotations
+- transactiona management
+-
+
+memeory management
+
+deployment
+
+kubernatice
+kibanna
+
+
+suggestions to improove performance
+- hibernate
+
+https://thoughts-on-java.org/5-common-hibernate-mistakes-that-cause-dozens-of-unexpected-queries/
+
+===> all many to one are egar by default so need to mark as lazy when required
+===> for lazy association, runs extra quries so use LEFT JOIN FETCH relation instead when required
+===> for list relation all elements are removed & and addded for any changes, so mark attribute are Set not List
+===> removing child eith CascadeType.Remove maked individual quries
+===> updating and removing in bulk using In makes individual quries
+
+following makes individual qury for all ids
+TypedQuery<Author> query = em.createQuery("SELECT a FROM Author a WHERE id IN (:ids)", Author.class);
+query.setParameter("ids", ids);
+List<Author> authors = query.getResultList();
+ 
+for (Author a : authors) {
+    em.remove(a);
+}
+
+
+need to first flush and clear context
+
+em.flush();
+em.clear();
+   
+// Remove all entities referenced in the List ids variable
+Query query = em.createQuery("DELETE Author a WHERE id IN (:ids)");
+query.setParameter("ids", ids);
+query.executeUpdate();
+
+
+
+https://www.baeldung.com/spring-core-annotations
+
+
+Spring Core Annotations
+
+@Autowired
+@Bean
+	@Bean
+	Engine engine() {
+	    return new Engine();
+	}
+
+@Qualifier
+	@Autowired
+	Biker(@Qualifier("bike") Vehicle vehicle) {
+		this.vehicle = vehicle;
+	}
+
+@Required
+void setColor(String color) {
+    this.color = color;
+}
+
+<bean class="com.baeldung.annotations.Bike">
+    <property name="color" value="green" />
+</bean>
+
+@DependsOn("engine")
+class Car implements Vehicle {}
+
+
+@Configuration
+@Lazy
+class VehicleFactoryConfig {
+ 
+    @Bean
+    @Lazy(false)
+    Engine engine() {
+        return new Engine();
+    }
+}
+
+
+@Primary
+class Car implements Vehicle {}
+
+
+
+@Component
+@Scope("prototype")
+class Engine {}
+
+
+@Profile("sportDay")
+class Bike implements Vehicle {}
+
+
+@Import(VehiclePartSupplier.class)
+class VehicleFactoryConfig {}
+
+https://www.baeldung.com/spring-mvc-annotations
+
+WEB anotaions
+
+@RequestMapping
+	path, or its aliases, name, and value: which URL the method is mapped to
+	method: compatible HTTP methods
+	params: filters requests based on presence, absence, or value of HTTP parameters
+	headers: filters requests based on presence, absence, or value of HTTP headers
+	consumes: which media types the method can consume in the HTTP request body
+	produces: which media types the method can produce in the HTTP response body
+
+Moreover, @GetMapping, @PostMapping, @PutMapping, @DeleteMapping, and @PatchMapping are different variants of @RequestMapping with the HTTP method already set to GET, POST, PUT, DELETE, and PATCH respectively.
+These are available since Spring 4.3 release.
+
+@PostMapping("/save")
+void saveVehicle(@RequestBody Vehicle vehicle) {
+
+
+
+@RequestMapping("/{id}")
+Vehicle getVehicle(@PathVariable("id") long id) {
+    // ...
+}
+
+@RequestMapping
+Vehicle getVehicleByParam(@RequestParam("id") long id) {
+    // ...
+}
+
+
+If we mark a request handler method with @ResponseBody, Spring treats the result of the method as the response itself:
+
+@ResponseBody
+@RequestMapping("/hello")
+String hello() {
+    return "Hello World!";
+}
+
+
+
+With this annotation, we can declare a custom error handler method. Spring calls this method when a request handler method throws any of the specified exceptions.
+
+@ExceptionHandler(IllegalArgumentException.class)
+void onIllegalArgumentException(IllegalArgumentException exception) {
+    // ...
+}
+
+
+We can specify the desired HTTP status of the response if we annotate a request handler method with this annotation. We can declare the status code with the code argument, or its alias, the value argument
+
+
+
+@ExceptionHandler(IllegalArgumentException.class)
+@ResponseStatus(HttpStatus.BAD_REQUEST)
+void onIllegalArgumentException(IllegalArgumentException exception) {
+    // ...
+}
+
+
+ @Controller
+ 
+ The @RestController combines @Controller and @ResponseBody.
+ 
+ 
+ 
+  @ModelAttribute
+  With this annotation we can access elements that are already in the model of an MVC @Controller, by providing the model key:
+
+	@PostMapping("/assemble")
+	void assembleVehicle(@ModelAttribute("vehicle") Vehicle vehicleInModel) {
+		// ...
+	}
+
+	
+@CrossOrigin enables cross-domain communication for the annotated request handler methods:
+
+https://www.baeldung.com/spring-boot-annotations
+
+Spring boot annotations
+
+@SpringBootApplication
+	@SpringBootApplication encapsulates @Configuration, @EnableAutoConfiguration, and @ComponentScan annotations with their default attributes.
+	
+	
+@ConditionalOnClass and @ConditionalOnMissingClass	
+	
+	Using these conditions, Spring will only use the marked auto-configuration bean if the class in the annotation’s argument is present/absent:
+
+@Configuration
+@ConditionalOnClass(DataSource.class)
+class MySQLAutoconfiguration {
+    //...
+}
+
+
+@ConditionalOnBean and @ConditionalOnMissingBean
+We can use these annotations when we want to define conditions based on the presence or absence of a specific bean:
+
+
+
+
+@ConditionalOnProperty
+
+@Bean
+@ConditionalOnProperty(
+    name = "usemysql", 
+    havingValue = "local"
+)
+DataSource dataSource() {
+    // ...
+}
+
+
+
+@ConditionalOnResource
+
+@ConditionalOnResource(resources = "classpath:mysql.properties")
+Properties additionalProperties() {
+    // ...
+}
+	
+@ConditionalOnWebApplication
+
+
+@Bean
+@ConditionalOnExpression("${usemysql} && ${mysqlserver == 'local'}")
+DataSource dataSource() {
+    // ...
+}
+
+
+@Conditional(HibernateCondition.class)
+Properties additionalProperties() {
+    //...
+}
+
+
+https://www.baeldung.com/spring-data-annotations
+
+
+Common Spring Data Annotations
+
+@Transactional
+want to configure the transactional behavior of a method
+
+@Transactional
+void pay() {}
+
+
+@NoRepositoryBean
+interface MyUtilityRepository<T, ID extends Serializable> extends CrudRepository<T, ID> {
+    Optional<T> findById(ID id);
+}
+
+@Query("FROM Person p WHERE p.name = :name")
+Person findByName(@Param("name") String name);
+
+	@Id
+    Long id;
+	
+	We can use this annotation to mark a field in a model class as transient. Hence the data store engine won’t read or write this field’s value:
+
+    @Transient
+    int age;
+	
+	
+	With these annotations, we can audit our model classes: Spring automatically populates the annotated fields with the principal who created the object, last modified it, and the date of creation, and last modification:
+
+
+	
+	
+	@CreatedBy
+    User creator;
+     
+    @LastModifiedBy
+    User modifier;
+     
+    @CreatedDate
+    Date createdAt;
+     
+    @LastModifiedDate
+    Date modifiedAt;
+	
+	Supports JPQL & SQL
+	@Query("FROM Person p WHERE p.name = :name")
+	Person findByName(@Param("name") String name);
+	
+	@Query(value = "SELECT AVG(p.age) FROM person p", nativeQuery = true)	// Need to make nativeQuery true
+	int getAverageAge();
+	
+	We can configure the lock mode when we execute a repository query method
+	@Lock(LockModeType.NONE)
+	@Query("SELECT COUNT(*) FROM Person p")
+	long getPersonCount();
+	
+		READ
+		WRITE
+		OPTIMISTIC
+		OPTIMISTIC_FORCE_INCREMENT
+		PESSIMISTIC_READ
+		PESSIMISTIC_WRITE
+		PESSIMISTIC_FORCE_INCREMENT
+		NONE
+	
+	
+	To use JPA repositories, we have to indicate it to Spring. We can do this with @EnableJpaRepositories.
+
+	Note, that we have to use this annotation with @Configuration
+
+	For the methods we get out-of-the-box like findAll(Sort) or the ones that are generated by parsing method signatures, we can only use object properties to define our sort:
+	userRepository.findAll(new Sort(Sort.Direction.ASC, "name"));
+	
+	
+	userRepository.findAllUsers(JpaSort.unsafe("LENGTH(name)"));
+	
+	When the @Query annotation uses native SQL, then it’s not possible to define a Sort.
+	
+	
+	Note t	hat – by default, rollback happens for runtime, unchecked exceptions only. The checked exception does not trigger a rollback of the transaction; the behavior can, of course, be configured with the rollbackFor and noRollbackFor annotation parameters
+
+
+https://www.baeldung.com/spring-data-jpa-query
+	
+
+https://www.baeldung.com/spring-scheduling-annotations
+
+When single-threaded execution isn’t enough, we can use annotations from the org.springframework.scheduling.annotation package.
+	
+	
+
+
+Spring bean scopes
+
+singleton
+	default
+		@Bean
+		@Scope("singleton")
+prototype
+	A bean with prototype scope will return a different instance every time it is requested from the 
+	
+	As mentioned, there are four additional scopes that are only available in a web-aware application context
+request
+session
+application
+websocket
+
+The request scope creates a bean instance for a single HTTP request while session scope creates for an HTTP Session.
+
+The application scope creates the bean instance for the lifecycle a ServletContext and the websocket scope creates it for a particular WebSocket session.
+
+
+@Configuration
+@EnableAsync
+public class SpringAsyncConfig {
+
+@Async
+First, let's go over the rules. @Async has two limitations:
+
+It must be applied to public methods only.
+Self-invocation — calling the async method from within the same class — won't work
+
+
+@Async
+public Future<String> asyncMethodWithReturnType() {
+    System.out.println("Execute method asynchronously - " 
+      + Thread.currentThread().getName());
+    try {
+        Thread.sleep(5000);
+        return new AsyncResult<String>("hello world !!!!");
+    } catch (InterruptedException e) {
+        //
+    }
+
+    return null;
+}
+public void testAsyncAnnotationForMethodsWithReturnType()
+  throws InterruptedException, ExecutionException {
+    System.out.println("Invoking an asynchronous method. " 
+      + Thread.currentThread().getName());
+    Future<String> future = asyncAnnotationExample.asyncMethodWithReturnType();
+
+    while (true) {
+        if (future.isDone()) {
+            System.out.println("Result from asynchronous process - " + future.get());
+            break;
+        }
+        System.out.println("Continue doing something else. ");
+        Thread.sleep(1000);
+    }
+}
+
+
+Spring Annotations
+==
+	org.springframework.context.annotation
+	public @interface Bean
+	
+	Indicates that a method produces a bean to be managed by the Spring container.
+	
+	 @Bean		// name of bean is method name
+     public MyBean myBean() {
+         // instantiate and configure MyBean obj
+         return obj;
+     }
+	 
+	 @Bean({"b1", "b2"}) // bean available as 'b1' and 'b2', but not 'myBean'
+     public MyBean myBean() {
+         // instantiate and configure MyBean obj
+         return obj;
+     }
+	 Profile, Scope, Lazy, DependsOn, Primary, Order
+
+	 Note that the @Bean annotation does not provide attributes for profile, scope, lazy, depends-on or primary. Rather, it should be used in conjunction with @Scope, @Lazy, @DependsOn and @Primary annotations to declare those semantics. For example:
+
+     @Bean
+     @Profile("production")
+     @Scope("prototype")
+     public MyBean myBean() {
+         // instantiate and configure MyBean obj
+         return obj;
+     }
+ 
+	The semantics of the above-mentioned annotations match their use at the component class level: @Profile allows for selective inclusion of certain beans. @Scope changes the bean's scope from singleton to the specified scope. 
+	
+	@Lazy only has an actual effect in case of the default singleton scope. 
+	
+	@DependsOn enforces the creation of specific other beans before this bean will be created, in addition to any dependencies that the bean expressed through direct references, which is typically helpful for singleton startup. 
+	@Primary is a mechanism to resolve ambiguity at the injection point level if a single target component needs to be injected but several beans match by type.
+
+	Additionally, @Bean methods may also declare qualifier annotations and @Order values, to be taken into account during injection point resolution just like corresponding annotations on the corresponding component classes but potentially being very individual per bean definition (in case of multiple definitions with the same bean class). Qualifiers narrow the set of candidates after the initial type match; order values determine the order of resolved elements in case of collection injection points (with several target beans matching by type and qualifier).
+	
+	NOTE: @Order values may influence priorities at injection points, but please be aware that they do not influence singleton startup order which is an orthogonal concern determined by dependency relationships and @DependsOn declarations as mentioned above. Also, Priority is not available at this level since it cannot be declared on methods; its semantics can be modeled through @Order values in combination with @Primary on a single bean per type.
+
+	@Bean is generally used under classed marked with @Configuration
+	@Configuration classes and their factory methods must not be marked as final or private in this mode.
+	
+	
+	@Bean methods may also be declared within classes that are NOT annotated with @Configuration. For example, bean methods may be declared in a @Component class or even in a plain old class. In such cases, a @Bean method will get processed in a so-called 'lite' mode.
+	, 'inter-bean references' are not supported in lite mode. Instead, when one @Bean-method invokes another @Bean-method in lite mode, the invocation is a standard Java method invocation; Spring does not intercept the invocation via a CGLIB proxy. This is analogous to inter-@Transactional method calls where in proxy mode, Spring does not intercept the invocation — Spring does so only in AspectJ mode.
+	
+	As a consequence, @Configuration classes and their factory methods must not be marked as final or private in this mode
+	
+	
+	BeanFactoryPostProcessor-returning @Bean methods
+	Special consideration must be taken for @Bean methods that return Spring BeanFactoryPostProcessor (BFPP) types. Because BFPP objects must be instantiated very early in the container lifecycle, they can interfere with processing of annotations such as @Autowired, @Value, and @PostConstruct within @Configuration classes. To avoid these lifecycle issues, mark BFPP-returning @Bean methods as static. For example
+
+	marking this method as static, it can be invoked without causing instantiation of its declaring @Configuration class, thus avoiding the above-mentioned lifecycle conflicts. Note however that static @Bean methods will not be enhanced for scoping and AOP semantics as mentioned above. This works out in BFPP cases, as they are not typically referenced by other @Bean methods. As a reminder, a WARN-level log message will be issued for any non-static @Bean methods having a return type assignable to BeanFactoryPostProcessor.
+
+	
+	Constraints when authoring @Configuration classes
+		Configuration classes must be provided as classes (i.e. not as instances returned from factory methods), allowing for runtime enhancements through a generated subclass.
+		Configuration classes must be non-final.
+		Configuration classes must be non-local (i.e. may not be declared within a method).
+		Any nested configuration classes must be declared as static.
+		@Bean methods may not in turn create further configuration classes (any such instances will be treated as regular beans, with their configuration annotations remaining undetected).
+
+
+
+==
+@Override Why?
+Use it every time you override a method for two benefits. Do it so that you can take advantage of the compiler checking to make sure you actually are overriding a method when you think you are. This way, if you make a common mistake of misspelling a method name or not correctly matching the parameters, you will be warned that you method does not actually override as you think it does. Secondly, it makes your code easier to understand because it is more obvious when methods are overwritten.
+
+
+
+Setter-based DI is accomplished by the container calling setter methods on your beans after invoking a no-argument constructor or a no-argument static factory method to instantiate your bean.
+
+
+
+spring MVC
+
+	ApplicationContext instances in Spring can be scoped. In the Web MVC framework, each DispatcherServlet has its own WebApplicationContext, which inherits all
+
+	@RequestMapping("/spring-web/{symbolicName:[a-z-]}-{version:\\d\\.\\d\\.\\d}{extension:\\.[a-z]}")
+		public void handle(@PathVariable String version, @PathVariable String extension) {
+			// ...
+		}
+	}
+
+
+	// GET /pets/42;q=11;r=22
+
+	@RequestMapping(value = "/pets/{petId}", method = RequestMethod.GET)
+	public void findPet(@PathVariable String petId, @MatrixVariable int q) {
+
+		// petId == 42
+		// q == 11
+
+	}
+
+
+
+
+
+org.springframework.context.ApplicationContext
+
+	 ClassPathXmlApplicationContext
+	 FileSystemXmlApplicationContext
+	 
+
+The most flexible variant is GenericApplicationContext in combination with reader delegates, e.g. with XmlBeanDefinitionReader for XML files:
+	
+	GenericApplicationContext context = new GenericApplicationContext();
+	new XmlBeanDefinitionReader(context).loadBeanDefinitions("services.xml", "daos.xml");
+	context.refresh();
+	
+Or with GroovyBeanDefinitionReader for Groovy files:
+
+	GenericApplicationContext context = new GenericApplicationContext();
+	new GroovyBeanDefinitionReader(context).loadBeanDefinitions("services.groovy", "daos.groovy");
+	context.refresh();
+	
+
+
+In addition to bean definitions that contain information on how to create a specific bean, the ApplicationContext implementations also permit the registration of existing objects that are created outside the container, by users. This is done by accessing the ApplicationContext’s BeanFactory via the method getBeanFactory() which returns the BeanFactory implementation DefaultListableBeanFactory. DefaultListableBeanFactory supports this registration through the methods registerSingleton(..) and registerBeanDefinition(..). However, typical applications work solely with beans defined through metadata bean definitions.
+
+
+Bean metadata and manually supplied singleton instances need to be registered as early as possible, in order for the container to properly reason about them during autowiring and other introspection steps. While overriding of existing metadata and existing singleton instances is supported to some degree, the registration of new beans at runtime (concurrently with live access to factory) is not officially supported and may lead to concurrent access exceptions and/or inconsistent state in the bean container.
+
+
+
+
+Dependency resolution process
+	The container performs bean dependency resolution as follows:
+	
+	The ApplicationContext is created and initialized with configuration metadata that describes all the beans. Configuration metadata can be specified via XML, Java code, or annotations.
+	
+	For each bean, its dependencies are expressed in the form of properties, constructor arguments, or arguments to the static-factory method if you are using that instead of a normal constructor. These dependencies are provided to the bean, when the bean is actually created.
+	
+	Each property or constructor argument which is a value is converted from its specified format to the actual type of that property or constructor argument. By default Spring can convert a value supplied in string format to all built-in types, such as int, long, String, boolean, etc.
+	Each property or constructor argument is an actual definition of the value to set, or a reference to another bean in the container.
+	
+	
+static factory method to return an instance of the object:
+
+	
+	<bean id="exampleBean" class="examples.ExampleBean" factory-method="createInstance">
+		<constructor-arg ref="anotherExampleBean"/>
+		<constructor-arg ref="yetAnotherBean"/>
+		<constructor-arg value="1"/>
+	</bean>
+
+	<bean id="anotherExampleBean" class="examples.AnotherBean"/>
+	<bean id="yetAnotherBean" class="examples.YetAnotherBean"/>
+	
+	
+	
+	
+Dependencies and configuration in detail
+
+Straight values
+	<bean id="myDataSource" class="org.apache.commons.dbcp.BasicDataSource" destroy-method="close">
+		<!-- results in a setDriverClassName(String) call -->
+		<property name="driverClassName" value="com.mysql.jdbc.Driver"/>
+		<property name="url" value="jdbc:mysql://localhost:3306/mydb"/>
+		<property name="username" value="root"/>
+		<property name="password" value="masterkaoli"/>
+	</bean>
+	
+	
+The following example uses the p-namespace for even more succinct XML configuration
+
+<beans xmlns="http://www.springframework.org/schema/beans"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:p="http://www.springframework.org/schema/p"
+    xsi:schemaLocation="http://www.springframework.org/schema/beans
+    https://www.springframework.org/schema/beans/spring-beans.xsd">
+
+    <bean id="myDataSource" class="org.apache.commons.dbcp.BasicDataSource"
+        destroy-method="close"
+        p:driverClassName="com.mysql.jdbc.Driver"
+        p:url="jdbc:mysql://localhost:3306/mydb"
+        p:username="root"
+        p:password="masterkaoli"/>
+
+</beans>
+
+
+You can also configure a java.util.Properties instance as
+
+<bean id="mappings"
+    class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
+
+    <!-- typed as a java.util.Properties -->
+    <property name="properties">
+        <value>
+            jdbc.driver.className=com.mysql.jdbc.Driver
+            jdbc.url=jdbc:mysql://localhost:3306/mydb
+        </value>
+    </property>
+</bean>
+
+
+idref
+
+
+<bean id="theTargetBean" class="..."/>
+
+<bean id="theClientBean" class="...">
+    <property name="targetName">
+        <idref bean="theTargetBean"/>
+    </property>
+</bean>
+
+same as bellow
+
+<bean id="theTargetBean" class="..." />
+
+<bean id="client" class="...">
+    <property name="targetName" value="theTargetBean"/>
+</bean>
+
+
+
+inner beans
+
+<bean id="outer" class="...">
+    <!-- instead of using a reference to a target bean, simply define the target bean inline -->
+    <property name="target">
+        <bean class="com.example.Person"> <!-- this is the inner bean -->
+            <property name="name" value="Fiona Apple"/>
+            <property name="age" value="25"/>
+        </bean>
+    </property>
+</bean>
+
+
+
+
+<bean id="moreComplexObject" class="example.ComplexObject">
+    <!-- results in a setAdminEmails(java.util.Properties) call -->
+    <property name="adminEmails">
+        <props>
+            <prop key="administrator">administrator@example.org</prop>
+            <prop key="support">support@example.org</prop>
+            <prop key="development">development@example.org</prop>
+        </props>
+    </property>
+    <!-- results in a setSomeList(java.util.List) call -->
+    <property name="someList">
+        <list>
+            <value>a list element followed by a reference</value>
+            <ref bean="myDataSource" />
+        </list>
+    </property>
+    <!-- results in a setSomeMap(java.util.Map) call -->
+    <property name="someMap">
+        <map>
+            <entry key="an entry" value="just some string"/>
+            <entry key ="a ref" value-ref="myDataSource"/>
+        </map>
+    </property>
+    <!-- results in a setSomeSet(java.util.Set) call -->
+    <property name="someSet">
+        <set>
+            <value>just some string</value>
+            <ref bean="myDataSource" />
+        </set>
+    </property>
+</bean>
+
+
+
+
+
+merging
+
+
+
+<beans>
+    <bean id="parent" abstract="true" class="example.ComplexObject">
+        <property name="adminEmails">
+            <props>
+                <prop key="administrator">administrator@example.com</prop>
+                <prop key="support">support@example.com</prop>
+            </props>
+        </property>
+    </bean>
+    <bean id="child" parent="parent">
+        <property name="adminEmails">
+            <!-- the merge is specified on the child collection definition -->
+            <props merge="true">
+                <prop key="sales">sales@example.com</prop>
+                <prop key="support">support@example.co.uk</prop>
+            </props>
+        </property>
+    </bean>
+<beans>
+
+
+p namespace
+
+<beans xmlns="http://www.springframework.org/schema/beans"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:p="http://www.springframework.org/schema/p"
+    xsi:schemaLocation="http://www.springframework.org/schema/beans
+        https://www.springframework.org/schema/beans/spring-beans.xsd">
+
+    <bean name="classic" class="com.example.ExampleBean">
+        <property name="email" value="foo@bar.com"/>
+    </bean>
+
+    <bean name="p-namespace" class="com.example.ExampleBean"
+        p:email="foo@bar.com"/>
+</beans>
+
+
+
+import org.springframework.beans.BeansException;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.ApplicationContextAware
+
+
+void setApplicationContext(ApplicationContext applicationContext)
+                    throws BeansException
+					
+					
+Looup policy
+??
+
+Arbitrary method replacement
+
+/**
+ * meant to be used to override the existing computeValue(String)
+ * implementation in MyValueCalculator
+ */
+public class ReplacementComputeValue implements MethodReplacer {
+
+    public Object reimplement(Object o, Method m, Object[] args) throws Throwable {
+        // get the input value, work with it, and return a computed result
+        String input = (String) args[0];
+        ...
+        return ...;
+    }
+}
+
+
+
+<bean id="myValueCalculator" class="x.y.z.MyValueCalculator">
+    <!-- arbitrary method replacement -->
+    <replaced-method name="computeValue" replacer="replacementComputeValue">
+        <arg-type>String</arg-type>
+    </replaced-method>
+</bean>
+
+<bean id="replacementComputeValue" class="a.b.c.ReplacementComputeValue"/>
+
+
+
+web.xml for web aware scopes
+
+<web-app>
+    ...
+    <listener>
+        <listener-class>
+            org.springframework.web.context.request.RequestContextListener
+        </listener-class>
+    </listener>
+    ...
+</web-app>
+
+
+Alternatively, if there are issues with your listener setup, consider using Spring’s RequestContextFilter. The filter mapping depends on the surrounding web application configuration, so you have to change it as appropriate.
+
+
+
+<web-app>
+    ...
+    <filter>
+        <filter-name>requestContextFilter</filter-name>
+        <filter-class>org.springframework.web.filter.RequestContextFilter</filter-class>
+    </filter>
+    <filter-mapping>
+        <filter-name>requestContextFilter</filter-name>
+        <url-pattern>/*</url-pattern>
+    </filter-mapping>
+    ...
+</web-app>
+
+
+<aop:scoped-proxy>
+
+You may also use <aop:scoped-proxy/> between beans that are scoped as singleton, with the reference then going through an intermediate proxy that is serializable and therefore able to re-obtain the target singleton bean on deserialization.
+
+When declaring <aop:scoped-proxy/> against a bean of scope prototype, every method call on the shared proxy will lead to the creation of a new target instance which the call is then being forwarded to.
+
+Also, scoped proxies are not the only way to access beans from shorter scopes in a lifecycle-safe fashion. You may also simply declare your injection point (i.e. the constructor/setter argument or autowired field) as ObjectFactory<MyTargetBean>, allowing for a getObject() call to retrieve the current instance on demand every time it is needed - without holding on to the instance or storing it separately.
+
+As an extended variant, you may declare ObjectProvider<MyTargetBean> which delivers several additional access variants, including getIfAvailable and getIfUnique.
+
+The JSR-330 variant of this is called Provider, used with a Provider<MyTargetBean> declaration and a corresponding get() call for every retrieval attempt. See here for more details on JSR-330 overall.
+
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:aop="http://www.springframework.org/schema/aop"
+    xsi:schemaLocation="http://www.springframework.org/schema/beans
+        https://www.springframework.org/schema/beans/spring-beans.xsd
+        http://www.springframework.org/schema/aop
+        https://www.springframework.org/schema/aop/spring-aop.xsd">
+
+    <!-- an HTTP Session-scoped bean exposed as a proxy -->
+    <bean id="userPreferences" class="com.foo.UserPreferences" scope="session">
+        <!-- instructs the container to proxy the surrounding bean -->
+        <aop:scoped-proxy/>
+    </bean>
+
+    <!-- a singleton-scoped bean injected with a proxy to the above bean -->
+    <bean id="userService" class="com.foo.SimpleUserService">
+        <!-- a reference to the proxied userPreferences bean -->
+        <property name="userPreferences" ref="userPreferences"/>
+    </bean>
+</beans>
+
+
+
+CGLIB proxies only intercept public method calls! Do not call non-public methods on such a proxy; they will not be delegated to the actual scoped target object.
+
+Alternatively, you can configure the Spring container to create standard JDK interface-based proxies for such scoped beans, by specifying false for the value of the proxy-target-class attribute of the <aop:scoped-proxy/> element
+
+<!-- DefaultUserPreferences implements the UserPreferences interface -->
+<bean id="userPreferences" class="com.foo.DefaultUserPreferences" scope="session">
+    <aop:scoped-proxy proxy-target-class="false"/>
+</bean>
+
+<bean id="userManager" class="com.foo.UserManager">
+    <property name="userPreferences" ref="userPreferences"/>
+</bean>
+
+
+
+
+custom Scope
+
+org.springframework.beans.factory.config.Scope Interface
+
+
+The following method returns the object from the underlying scope. The session scope implementation, for example, returns the session-scoped bean (and if it does not exist, the method returns a new instance of the bean, after having bound it to the session for future reference)
+
+Object get(String name, ObjectFactory objectFactory)
+
+Object remove(String name)
+
+
+The following method registers the callbacks the scope should execute when it is destroyed or when the specified object in the scope is destroyed. Refer to the javadocs or a Spring scope implementation for more information on destruction callbacks
+
+void registerDestructionCallback(String name, Runnable destructionCallback)
+
+The following method obtains the conversation identifier for the underlying scope. This identifier is different for each scope. For a session scoped implementation, this identifier can be the session identifier.
+
+String getConversationId()
+
+
+After you write and test one or more custom Scope implementations, you need to make the Spring container aware of your new scope(s). The following method is the central method to register a new Scope with the Spring container:
+
+void registerScope(String scopeName, Scope scope);
+
+This method is declared on the ConfigurableBeanFactory interface, which is available on most of the concrete ApplicationContext implementations that ship with Spring via the BeanFactory property.
+
+
+
+Scope threadScope = new SimpleThreadScope();
+beanFactory.registerScope("thread", threadScope);
+
+
+You can also do the Scope registration declaratively, using the CustomScopeConfigurer class:
+
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:aop="http://www.springframework.org/schema/aop"
+    xsi:schemaLocation="http://www.springframework.org/schema/beans
+        https://www.springframework.org/schema/beans/spring-beans.xsd
+        http://www.springframework.org/schema/aop
+        https://www.springframework.org/schema/aop/spring-aop.xsd">
+
+    <bean class="org.springframework.beans.factory.config.CustomScopeConfigurer">
+        <property name="scopes">
+            <map>
+                <entry key="thread">
+                    <bean class="org.springframework.context.support.SimpleThreadScope"/>
+                </entry>
+            </map>
+        </property>
+    </bean>
+
+    <bean id="bar" class="x.y.Bar" scope="thread">
+        <property name="name" value="Rick"/>
+        <aop:scoped-proxy/>
+    </bean>
+
+    <bean id="foo" class="x.y.Foo">
+        <property name="bar" ref="bar"/>
+    </bean>
+
+</beans>
+
+When you place <aop:scoped-proxy/> in a FactoryBean implementation, it is the factory bean itself that is scoped, not the object returned from getObject().
+
+
+
+30-7-2019
+===========================
+
+Note that the regular org.springframework.context.Lifecycle interface is just a plain contract for explicit start/stop notifications and does NOT imply auto-startup at context refresh time. Consider implementing org.springframework.context.SmartLifecycle instead for fine-grained control over auto-startup of a specific bean (including startup phases). Also, please note that stop notifications are not guaranteed to come before destruction: On regular shutdown, all Lifecycle beans will first receive a stop notification before the general destruction callbacks are being propagated; however, on hot refresh during a context’s lifetime or on aborted refresh attempts, only destroy methods will be called.
+
+
+
+Overriding default timeout 
+
+DefaultLifecycleProcessor, will wait up to its timeout value for the group of objects within each phase to invoke that callback. The default per-phase timeout is 30 seconds. You can override the default lifecycle processor instance by defining a bean named "lifecycleProcessor" within the context. If you only want to modify the timeout, then defining the following would be sufficient:
+
+
+
+
+
+<bean id="lifecycleProcessor" class="org.springframework.context.support.DefaultLifecycleProcessor">
+    <!-- timeout value in milliseconds -->
+    <property name="timeoutPerShutdownPhase" value="10000"/>
+</bean>
+
+
+
+
+The 'refresh' callback on the other hand enables another feature of SmartLifecycle beans. When the context is refreshed (after all objects have been instantiated and initialized), that callback will be invoked, and at that point the default lifecycle processor will check the boolean value returned by each SmartLifecycle object’s isAutoStartup() method. If "true", then that object will be started at that point rather than waiting for an explicit invocation of the context’s or its own start() method (unlike the context refresh, the context start does not happen automatically for a standard context implementation). The "phase" value as well as any "depends-on" relationships will determine the startup order in the same way as described above.
+
+
+
+
+import org.springframework.context.ConfigurableApplicationContext;
+import org.springframework.context.support.ClassPathXmlApplicationContext;
+
+public final class Boot {
+
+    public static void main(final String[] args) throws Exception {
+        ConfigurableApplicationContext ctx = new ClassPathXmlApplicationContext("beans.xml");
+
+        // add a shutdown hook for the above context...
+        ctx.registerShutdownHook();
+
+        // app runs here...
+
+        // main method exits, hook is called prior to the app shutting down...
+    }
+}
+
+
+
+
+Application context vs Web Application context
+
+- Always one application conext & can be one + web application context (per dispatcher servlet)
+- web application context extends application context ( so all beans of application context are available in web app context)
+
+- application context ( sing)
+
+
+
+
+
+spring-boot-starter: – This is the core starter and includes logging, auto-configuration support, and YAML.
+spring-boot-starter-jdbc – This starter is used for HikariCP connection pool with JDBC
+spring-boot-starter-web – Is the starter for building web applications, including RESTful, applications using Spring MVC
+spring-boot-starter-data-jpa – Is the starter to use Spring Data JPA with Hibernate
+spring-boot-starter-security – Is the starter used for Spring Security
+spring-boot-starter-aop: This starter is used for aspect-oriented programming with AspectJ and  Spring AOP
+spring-boot-starter-test: Is the starter for testing Spring Boot applications
